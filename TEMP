@@ -46,3 +46,5 @@ services:
       - redis-db
   redis-db:
     image: "redis:alpine"
+
+docker compose up
