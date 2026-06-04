@@ -1,0 +1,48 @@
+{
+  "name": "compose-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.19.2",
+    "redis": "^4.6.13"
+  }
+}
+
+const express = require('express');
+const redis = require('redis');
+
+const app = express();
+const client = redis.createClient({ url: 'redis://redis-db:6379' });
+
+async function startApp() {
+    await client.connect();
+    
+    app.get('/', async (req, res) => {
+        const visits = await client.incr('visits');
+        res.send(`Page views: ${visits}`);
+    });
+    
+    app.listen(3000);
+}
+
+startApp();
+
+docer-compose.yml
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["node", "index.js"]
+
+version: '3.8'
+services:
+  web-app:
+    build: .
+    ports:
+      - "8080:3000"
+    depends_on:
+      - redis-db
+  redis-db:
+    image: "redis:alpine"
